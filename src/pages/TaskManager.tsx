@@ -97,9 +97,17 @@ export const TaskList = () => {
         </button>
       </div>
 
+      {/* Overlay when drawer is open */}
+      <div
+        className={`fixed inset-0 bg-black transition-opacity duration-300 ease-in-out z-20 ${
+          isDrawerOpen ? 'opacity-50 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setIsDrawerOpen(false)}
+      />
+
       {/* Drawer */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-30 ${
           isDrawerOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -121,14 +129,6 @@ export const TaskList = () => {
           </div>
         </div>
       </div>
-
-      {/* Overlay when drawer is open */}
-      {isDrawerOpen && (
-        <div
-          className='fixed inset-0 bg-black bg-opacity-50 transition-opacity'
-          onClick={() => setIsDrawerOpen(false)}
-        />
-      )}
 
       {/* Move button outside main content and make it sticky */}
       <button
