@@ -27,6 +27,7 @@ export const TaskList = () => {
     },
   ]);
   const [newTaskDescription, setNewTaskDescription] = useState('');
+  const [isFormVisible, setIsFormVisible] = useState(false);
 
   const handleAddTask = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,77 +68,140 @@ export const TaskList = () => {
     return 0;
   });
 
+  const activeTasks = sortedTasks.filter((task) => !task.completed);
+  const completedTasks = sortedTasks.filter((task) => task.completed);
+
   return (
     <div className='max-w-2xl mx-auto p-4'>
       <div className='flex justify-between items-center mb-6'>
         <h1 className='text-2xl font-bold'>My Tasks</h1>
-        <div className='text-sm text-gray-500'>
-          {tasks.filter((t) => !t.completed).length} tasks remaining
-        </div>
+        <button
+          onClick={() => setIsFormVisible(!isFormVisible)}
+          className='rounded-full w-8 h-8 flex items-center justify-center bg-blue-500 text-white hover:bg-blue-600 transition-colors'
+        >
+          {isFormVisible ? '×' : '+'}
+        </button>
       </div>
 
       {/* Add Task Form */}
-      <form onSubmit={handleAddTask} className='mb-6 flex gap-2'>
-        <input
-          type='text'
-          placeholder='Add a new task...'
-          className='flex-1 p-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
-          value={newTaskDescription}
-          onChange={(e) => setNewTaskDescription(e.target.value)}
-        />
-        <button
-          type='submit'
-          className='bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors'
-          disabled={!newTaskDescription.trim()}
-        >
-          Add Task
-        </button>
-      </form>
+      {isFormVisible && (
+        <form onSubmit={handleAddTask} className='mb-6 flex gap-2'>
+          <input
+            type='text'
+            placeholder='Add a new task...'
+            className='flex-1 p-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+            value={newTaskDescription}
+            onChange={(e) => setNewTaskDescription(e.target.value)}
+            autoFocus
+          />
+          <button
+            type='submit'
+            className='bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors'
+            disabled={!newTaskDescription.trim()}
+          >
+            Add Task
+          </button>
+        </form>
+      )}
 
       {/* Task List */}
       {sortedTasks.length === 0 ? (
         <div className='text-center text-gray-500 py-8'>No tasks yet. Add one above!</div>
       ) : (
-        <div className='space-y-2'>
-          {sortedTasks.map((task) => (
-            <div
-              key={task.id}
-              className={`flex items-center gap-3 p-3 border rounded hover:bg-gray-50 transition-colors ${
-                task.completed ? 'bg-gray-50' : ''
-              }`}
-            >
-              {/* Checkbox */}
-              <input
-                type='checkbox'
-                checked={task.completed}
-                onChange={() => handleToggleComplete(task.id)}
-                className='h-5 w-5 rounded border-gray-300 focus:ring-blue-500'
-              />
-
-              {/* Task Description */}
-              <span className={`flex-1 ${task.completed ? 'line-through text-gray-500' : ''}`}>
-                {task.description}
-              </span>
-
-              {/* Star Button */}
-              <button
-                onClick={() => handleToggleStar(task.id)}
-                className={`p-1 hover:bg-gray-100 rounded ${
-                  task.starred ? 'text-yellow-500' : 'text-gray-400'
-                }`}
+        <div className='space-y-4'>
+          {/* Active Tasks */}
+          <div className='space-y-2'>
+            {activeTasks.map((task) => (
+              <div
+                key={task.id}
+                className={`flex items-center gap-3 p-3 border rounded hover:bg-gray-50 transition-colors`}
               >
-                ★
-              </button>
+                {/* Checkbox */}
+                <input
+                  type='checkbox'
+                  checked={task.completed}
+                  onChange={() => handleToggleComplete(task.id)}
+                  className='h-5 w-5 rounded border-gray-300 focus:ring-blue-500'
+                />
 
-              {/* Delete Button */}
-              <button
-                onClick={() => handleDeleteTask(task.id)}
-                className='p-1 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded'
-              >
-                ×
-              </button>
-            </div>
-          ))}
+                {/* Task Description */}
+                <span className={`flex-1 ${task.completed ? 'line-through text-gray-500' : ''}`}>
+                  {task.description}
+                </span>
+
+                {/* Star Button */}
+                <button
+                  onClick={() => handleToggleStar(task.id)}
+                  className={`p-1 hover:bg-gray-100 rounded ${
+                    task.starred ? 'text-yellow-500' : 'text-gray-400'
+                  }`}
+                >
+                  ★
+                </button>
+
+                {/* Delete Button */}
+                <button
+                  onClick={() => handleDeleteTask(task.id)}
+                  className='p-1 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded'
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Divider and Completed Tasks */}
+          {completedTasks.length > 0 && (
+            <>
+              <div className='flex items-center gap-2 pt-4'>
+                <div className='flex-1 h-px bg-gray-200'></div>
+                <span className='text-sm text-gray-500'>Completed</span>
+                <div className='flex-1 h-px bg-gray-200'></div>
+              </div>
+
+              <div className='space-y-2'>
+                {completedTasks.map((task) => (
+                  <div
+                    key={task.id}
+                    className='flex items-center gap-3 p-3 border rounded bg-gray-50 hover:bg-gray-100 transition-colors'
+                  >
+                    {/* Checkbox */}
+                    <input
+                      type='checkbox'
+                      checked={task.completed}
+                      onChange={() => handleToggleComplete(task.id)}
+                      className='h-5 w-5 rounded border-gray-300 focus:ring-blue-500'
+                    />
+
+                    {/* Task Description */}
+                    <span
+                      className={`flex-1 ${task.completed ? 'line-through text-gray-500' : ''}`}
+                    >
+                      {task.description}
+                    </span>
+
+                    {/* Star Button */}
+                    <button
+                      onClick={() => handleToggleStar(task.id)}
+                      className={`p-1 hover:bg-gray-100 rounded ${
+                        task.starred ? 'text-yellow-500' : 'text-gray-400'
+                      }`}
+                    >
+                      ★
+                    </button>
+
+                    {/* Delete Button */}
+                    <button
+                      onClick={() => handleDeleteTask(task.id)}
+                      className='p-1 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded'
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
 
