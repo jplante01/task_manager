@@ -75,13 +75,15 @@ export const TaskList = () => {
     <div className='max-w-2xl mx-auto p-4'>
       <div className='flex justify-between items-center mb-6'>
         <h1 className='text-2xl font-bold'>My Tasks</h1>
-        <button
-          onClick={() => setIsFormVisible(!isFormVisible)}
-          className='rounded-full w-8 h-8 flex items-center justify-center bg-blue-500 text-white hover:bg-blue-600 transition-colors'
-        >
-          {isFormVisible ? '×' : '+'}
-        </button>
       </div>
+
+      {/* Move button outside main content and make it sticky */}
+      <button
+        onClick={() => setIsFormVisible(!isFormVisible)}
+        className='fixed bottom-8 right-8 rounded-full w-12 h-12 flex items-center justify-center bg-blue-500 text-white hover:bg-blue-600 transition-colors shadow-lg text-2xl'
+      >
+        {isFormVisible ? '×' : '+'}
+      </button>
 
       {/* Add Task Form */}
       {isFormVisible && (
