@@ -12,6 +12,9 @@ interface UseTaskManagerReturn {
   tasks: Task[];
   isLoading: boolean;
   error: string | null;
+  newTaskDescription: string;
+  setNewTaskDescription: React.Dispatch<React.SetStateAction<string>>;
+  handleAddTask: (description: string) => void;
   addTask: (description: string) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
@@ -36,8 +39,18 @@ export function useTaskManager(): UseTaskManagerReturn {
       created_at: new Date().toISOString(),
     },
   ]);
+  const [newTaskDescription, setNewTaskDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleAddTask = (description: string) => {
+    try {
+      addTask(description);
+      setNewTaskDescription('');
+    } catch (err) {
+      setError('Failed to add task');
+    }
+  };
 
   const addTask = (description: string) => {
     try {
@@ -94,6 +107,9 @@ export function useTaskManager(): UseTaskManagerReturn {
     tasks,
     isLoading,
     error,
+    newTaskDescription,
+    setNewTaskDescription,
+    handleAddTask,
     addTask,
     updateTask,
     deleteTask,

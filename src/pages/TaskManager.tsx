@@ -1,27 +1,24 @@
 // pages/TaskList.tsx
 import { useState } from 'react';
 import { useTaskManager } from '../hooks/useTaskManager';
-
-interface Task {
-  id: string;
-  description: string;
-  completed: boolean;
-  starred: boolean;
-  created_at: string;
-}
+import { AddTaskForm } from '../components/AddTaskForm';
 
 export const TaskList = () => {
-  const { tasks, isLoading, error, addTask, deleteTask, toggleTaskCompletion, toggleTaskStar } =
-    useTaskManager();
-  const [newTaskDescription, setNewTaskDescription] = useState('');
+  const {
+    tasks,
+    isLoading,
+    error,
+    newTaskDescription,
+    setNewTaskDescription,
+    handleAddTask,
+    deleteTask,
+    toggleTaskCompletion,
+    toggleTaskStar,
+  } = useTaskManager();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  const handleAddTask = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTaskDescription.trim()) return;
-
-    addTask(newTaskDescription);
-    setNewTaskDescription('');
+  const onAddTask = (description: string) => {
+    handleAddTask(description);
     setIsDrawerOpen(false);
   };
 
@@ -68,24 +65,13 @@ export const TaskList = () => {
             </button>
           </div>
 
-          {/* Add Task Form - Always visible on desktop */}
+          {/* Replace form with AddTaskForm component */}
           <div className='mb-6'>
-            <form onSubmit={handleAddTask} className='space-y-2'>
-              <input
-                type='text'
-                placeholder='Add a new task...'
-                className='w-full p-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
-                value={newTaskDescription}
-                onChange={(e) => setNewTaskDescription(e.target.value)}
-              />
-              <button
-                type='submit'
-                className='w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors'
-                disabled={!newTaskDescription.trim()}
-              >
-                Add Task
-              </button>
-            </form>
+            <AddTaskForm
+              description={newTaskDescription}
+              onDescriptionChange={setNewTaskDescription}
+              onSubmit={onAddTask}
+            />
           </div>
 
           {/* Task Summary */}
