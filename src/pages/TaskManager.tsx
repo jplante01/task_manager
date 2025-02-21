@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useTaskManager } from '../hooks/useTaskManager';
 import { AddTaskForm } from '../components/AddTaskForm';
+import { TaskItem } from '../components/TaskItem';
 
 export const TaskList = () => {
   const {
@@ -117,43 +118,13 @@ export const TaskList = () => {
               {/* Active Tasks */}
               <div className='space-y-2'>
                 {activeTasks.map((task) => (
-                  <div
+                  <TaskItem
                     key={task.id}
-                    className={`flex items-center gap-3 p-3 border rounded hover:bg-gray-50 transition-colors`}
-                  >
-                    {/* Checkbox */}
-                    <input
-                      type='checkbox'
-                      checked={task.completed}
-                      onChange={() => toggleTaskCompletion(task.id)}
-                      className='h-5 w-5 rounded border-gray-300 focus:ring-blue-500'
-                    />
-
-                    {/* Task Description */}
-                    <span
-                      className={`flex-1 ${task.completed ? 'line-through text-gray-500' : ''}`}
-                    >
-                      {task.description}
-                    </span>
-
-                    {/* Star Button */}
-                    <button
-                      onClick={() => toggleTaskStar(task.id)}
-                      className={`p-1 hover:bg-gray-100 rounded ${
-                        task.starred ? 'text-yellow-500' : 'text-gray-400'
-                      }`}
-                    >
-                      ★
-                    </button>
-
-                    {/* Delete Button */}
-                    <button
-                      onClick={() => deleteTask(task.id)}
-                      className='p-1 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded'
-                    >
-                      ×
-                    </button>
-                  </div>
+                    {...task}
+                    onToggleComplete={toggleTaskCompletion}
+                    onToggleStar={toggleTaskStar}
+                    onDelete={deleteTask}
+                  />
                 ))}
               </div>
 
@@ -168,43 +139,13 @@ export const TaskList = () => {
 
                   <div className='space-y-2'>
                     {completedTasks.map((task) => (
-                      <div
+                      <TaskItem
                         key={task.id}
-                        className='flex items-center gap-3 p-3 border rounded bg-gray-50 hover:bg-gray-100 transition-colors'
-                      >
-                        {/* Checkbox */}
-                        <input
-                          type='checkbox'
-                          checked={task.completed}
-                          onChange={() => toggleTaskCompletion(task.id)}
-                          className='h-5 w-5 rounded border-gray-300 focus:ring-blue-500'
-                        />
-
-                        {/* Task Description */}
-                        <span
-                          className={`flex-1 ${task.completed ? 'line-through text-gray-500' : ''}`}
-                        >
-                          {task.description}
-                        </span>
-
-                        {/* Star Button */}
-                        <button
-                          onClick={() => toggleTaskStar(task.id)}
-                          className={`p-1 hover:bg-gray-100 rounded ${
-                            task.starred ? 'text-yellow-500' : 'text-gray-400'
-                          }`}
-                        >
-                          ★
-                        </button>
-
-                        {/* Delete Button */}
-                        <button
-                          onClick={() => deleteTask(task.id)}
-                          className='p-1 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded'
-                        >
-                          ×
-                        </button>
-                      </div>
+                        {...task}
+                        onToggleComplete={toggleTaskCompletion}
+                        onToggleStar={toggleTaskStar}
+                        onDelete={deleteTask}
+                      />
                     ))}
                   </div>
                 </>
