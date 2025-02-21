@@ -1,5 +1,6 @@
 // pages/TaskList.tsx
 import { useState } from 'react';
+import { useTaskManager } from '../hooks/useTaskManager';
 
 interface Task {
   id: string;
@@ -10,54 +11,18 @@ interface Task {
 }
 
 export const TaskList = () => {
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: '1',
-      description: 'Complete project mockup',
-      completed: false,
-      starred: true,
-      created_at: new Date().toISOString(),
-    },
-    {
-      id: '2',
-      description: 'Review design with team',
-      completed: true,
-      starred: false,
-      created_at: new Date().toISOString(),
-    },
-  ]);
+  const { tasks, isLoading, error, addTask, deleteTask, toggleTaskCompletion, toggleTaskStar } =
+    useTaskManager();
   const [newTaskDescription, setNewTaskDescription] = useState('');
-  const [isFormVisible, setIsFormVisible] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const handleAddTask = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTaskDescription.trim()) return;
 
-    const newTask: Task = {
-      id: Date.now().toString(), // This will be handled by Supabase later
-      description: newTaskDescription.trim(),
-      completed: false,
-      starred: false,
-      created_at: new Date().toISOString(),
-    };
-
-    setTasks((prev) => [newTask, ...prev]);
+    addTask(newTaskDescription);
     setNewTaskDescription('');
-  };
-
-  const handleToggleComplete = (id: string) => {
-    setTasks(
-      tasks.map((task) => (task.id === id ? { ...task, completed: !task.completed } : task)),
-    );
-  };
-
-  const handleToggleStar = (id: string) => {
-    setTasks(tasks.map((task) => (task.id === id ? { ...task, starred: !task.starred } : task)));
-  };
-
-  const handleDeleteTask = (id: string) => {
-    setTasks(tasks.filter((task) => task.id !== id));
+    setIsDrawerOpen(false);
   };
 
   const sortedTasks = [...tasks].sort((a, b) => {
@@ -72,19 +37,27 @@ export const TaskList = () => {
   const activeTasks = sortedTasks.filter((task) => !task.completed);
   const completedTasks = sortedTasks.filter((task) => task.completed);
 
+  if (isLoading) {
+    return <div className='text-center py-8'>Loading tasks...</div>;
+  }
+
+  if (error) {
+    return <div className='text-center py-8 text-red-500'>{error}</div>;
+  }
+
   return (
-    <div className='flex'>
+    <div className='flex min-h-screen'>
       {/* Sidebar for desktop / Drawer for mobile */}
       <div
         className={`
-          fixed lg:relative lg:flex
-          h-full w-64 bg-white shadow-lg
+          fixed lg:sticky lg:flex
+          top-0 h-screen w-64 bg-white shadow-lg
           transform transition-transform duration-300 ease-in-out z-30
           ${isDrawerOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0 lg:mr-8
         `}
       >
-        <div className='p-4 w-full'>
+        <div className='p-4 w-full h-full flex flex-col'>
           <div className='flex justify-between items-center mb-8'>
             <h1 className='text-2xl font-bold'>My Tasks</h1>
             <button
@@ -116,7 +89,7 @@ export const TaskList = () => {
           </div>
 
           {/* Task Summary */}
-          <div className='space-y-2 text-sm text-gray-500'>
+          <div className='space-y-2 text-sm text-gray-500 mt-auto'>
             <div>Total: {tasks.length} tasks</div>
             <div>Completed: {tasks.filter((t) => t.completed).length} tasks</div>
             <div>Starred: {tasks.filter((t) => t.starred).length} tasks</div>
@@ -149,106 +122,110 @@ export const TaskList = () => {
           </button>
         </div>
 
-        {/* Task List */}
-        {sortedTasks.length === 0 ? (
-          <div className='text-center text-gray-500 py-8'>No tasks yet. Add one above!</div>
-        ) : (
-          <div className='space-y-4'>
-            {/* Active Tasks */}
-            <div className='space-y-2'>
-              {activeTasks.map((task) => (
-                <div
-                  key={task.id}
-                  className={`flex items-center gap-3 p-3 border rounded hover:bg-gray-50 transition-colors`}
-                >
-                  {/* Checkbox */}
-                  <input
-                    type='checkbox'
-                    checked={task.completed}
-                    onChange={() => handleToggleComplete(task.id)}
-                    className='h-5 w-5 rounded border-gray-300 focus:ring-blue-500'
-                  />
-
-                  {/* Task Description */}
-                  <span className={`flex-1 ${task.completed ? 'line-through text-gray-500' : ''}`}>
-                    {task.description}
-                  </span>
-
-                  {/* Star Button */}
-                  <button
-                    onClick={() => handleToggleStar(task.id)}
-                    className={`p-1 hover:bg-gray-100 rounded ${
-                      task.starred ? 'text-yellow-500' : 'text-gray-400'
-                    }`}
+        {/* Task List with added top spacing on desktop */}
+        <div className='lg:pt-16'>
+          {sortedTasks.length === 0 ? (
+            <div className='text-center text-gray-500 py-8'>No tasks yet. Add one above!</div>
+          ) : (
+            <div className='space-y-4'>
+              {/* Active Tasks */}
+              <div className='space-y-2'>
+                {activeTasks.map((task) => (
+                  <div
+                    key={task.id}
+                    className={`flex items-center gap-3 p-3 border rounded hover:bg-gray-50 transition-colors`}
                   >
-                    ★
-                  </button>
+                    {/* Checkbox */}
+                    <input
+                      type='checkbox'
+                      checked={task.completed}
+                      onChange={() => toggleTaskCompletion(task.id)}
+                      className='h-5 w-5 rounded border-gray-300 focus:ring-blue-500'
+                    />
 
-                  {/* Delete Button */}
-                  <button
-                    onClick={() => handleDeleteTask(task.id)}
-                    className='p-1 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded'
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            {/* Divider and Completed Tasks */}
-            {completedTasks.length > 0 && (
-              <>
-                <div className='flex items-center gap-2 pt-4'>
-                  <div className='flex-1 h-px bg-gray-200'></div>
-                  <span className='text-sm text-gray-500'>Completed</span>
-                  <div className='flex-1 h-px bg-gray-200'></div>
-                </div>
-
-                <div className='space-y-2'>
-                  {completedTasks.map((task) => (
-                    <div
-                      key={task.id}
-                      className='flex items-center gap-3 p-3 border rounded bg-gray-50 hover:bg-gray-100 transition-colors'
+                    {/* Task Description */}
+                    <span
+                      className={`flex-1 ${task.completed ? 'line-through text-gray-500' : ''}`}
                     >
-                      {/* Checkbox */}
-                      <input
-                        type='checkbox'
-                        checked={task.completed}
-                        onChange={() => handleToggleComplete(task.id)}
-                        className='h-5 w-5 rounded border-gray-300 focus:ring-blue-500'
-                      />
+                      {task.description}
+                    </span>
 
-                      {/* Task Description */}
-                      <span
-                        className={`flex-1 ${task.completed ? 'line-through text-gray-500' : ''}`}
-                      >
-                        {task.description}
-                      </span>
+                    {/* Star Button */}
+                    <button
+                      onClick={() => toggleTaskStar(task.id)}
+                      className={`p-1 hover:bg-gray-100 rounded ${
+                        task.starred ? 'text-yellow-500' : 'text-gray-400'
+                      }`}
+                    >
+                      ★
+                    </button>
 
-                      {/* Star Button */}
-                      <button
-                        onClick={() => handleToggleStar(task.id)}
-                        className={`p-1 hover:bg-gray-100 rounded ${
-                          task.starred ? 'text-yellow-500' : 'text-gray-400'
-                        }`}
-                      >
-                        ★
-                      </button>
+                    {/* Delete Button */}
+                    <button
+                      onClick={() => deleteTask(task.id)}
+                      className='p-1 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded'
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
 
-                      {/* Delete Button */}
-                      <button
-                        onClick={() => handleDeleteTask(task.id)}
-                        className='p-1 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded'
+              {/* Divider and Completed Tasks */}
+              {completedTasks.length > 0 && (
+                <>
+                  <div className='flex items-center gap-2 pt-4'>
+                    <div className='flex-1 h-px bg-gray-200'></div>
+                    <span className='text-sm text-gray-500'>Completed</span>
+                    <div className='flex-1 h-px bg-gray-200'></div>
+                  </div>
+
+                  <div className='space-y-2'>
+                    {completedTasks.map((task) => (
+                      <div
+                        key={task.id}
+                        className='flex items-center gap-3 p-3 border rounded bg-gray-50 hover:bg-gray-100 transition-colors'
                       >
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        )}
+                        {/* Checkbox */}
+                        <input
+                          type='checkbox'
+                          checked={task.completed}
+                          onChange={() => toggleTaskCompletion(task.id)}
+                          className='h-5 w-5 rounded border-gray-300 focus:ring-blue-500'
+                        />
+
+                        {/* Task Description */}
+                        <span
+                          className={`flex-1 ${task.completed ? 'line-through text-gray-500' : ''}`}
+                        >
+                          {task.description}
+                        </span>
+
+                        {/* Star Button */}
+                        <button
+                          onClick={() => toggleTaskStar(task.id)}
+                          className={`p-1 hover:bg-gray-100 rounded ${
+                            task.starred ? 'text-yellow-500' : 'text-gray-400'
+                          }`}
+                        >
+                          ★
+                        </button>
+
+                        {/* Delete Button */}
+                        <button
+                          onClick={() => deleteTask(task.id)}
+                          className='p-1 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded'
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Mobile-only overlay */}
@@ -259,12 +236,12 @@ export const TaskList = () => {
         onClick={() => setIsDrawerOpen(false)}
       />
 
-      {/* Mobile-only floating action button */}
+      {/* Mobile-only floating action button - Updated to open sidebar */}
       <button
-        onClick={() => setIsFormVisible(!isFormVisible)}
+        onClick={() => setIsDrawerOpen(true)}
         className='fixed bottom-8 right-8 rounded-full w-12 h-12 flex items-center justify-center bg-blue-500 text-white hover:bg-blue-600 transition-colors shadow-lg text-2xl lg:hidden'
       >
-        {isFormVisible ? '×' : '+'}
+        +
       </button>
     </div>
   );
