@@ -1,9 +1,15 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-
+import { useContext } from 'react';
+import { AuthContext } from '../contexts/AuthContext';
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
+  const context = useContext(AuthContext);
   const location = useLocation();
+
+  if (!context) {
+    throw new Error('ProtectedRoute must be used within an AuthProvider');
+  }
+
+  const { user, loading } = context;
 
   if (loading) {
     return <div>Loading...</div>;

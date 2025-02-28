@@ -1,7 +1,7 @@
 // pages/Register.tsx
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { AuthContext } from '../contexts/AuthContext';
 import { AuthError } from '@supabase/supabase-js';
 
 export const Register = () => {
@@ -11,7 +11,13 @@ export const Register = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { signUp } = useAuth();
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error('Register must be used within an AuthProvider');
+  }
+
+  const { signUp } = context;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

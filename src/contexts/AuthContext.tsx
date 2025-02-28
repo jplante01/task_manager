@@ -1,97 +1,76 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { Session, User } from '@supabase/supabase-js';
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useState, useEffect, ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { AuthContextType } from './AuthContext.types';
 
-type AuthContextType = {
-  session: Session | null;
-  user: User | null;
-  isAnonymous: boolean;
-  loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
-  signInAnonymously: () => Promise<void>;
-  signOut: () => Promise<void>;
-};
+export const AuthContext = createContext<AuthContextType | null>(null);
 
-// Create the context
-const AuthContext = createContext<AuthContextType>({} as AuthContextType);
-
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [isAnonymous, setIsAnonymous] = useState(false);
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [session, setSession] = useState<AuthContextType['session']>(null);
+  const [user, setUser] = useState<AuthContextType['user']>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Get initial session only
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Get initial session
+    const getInitialSession = async () => {
+      try {
+        setLoading(true);
+
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        setSession(session);
+        setUser(session?.user || null);
+      } catch (error) {
+        console.error('Error getting initial session:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getInitialSession();
+
+    // Set up auth state change listener
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      setUser(session?.user ?? null);
-      // Check if user is anonymous based on metadata
-      setIsAnonymous(session?.user?.app_metadata?.provider === 'anonymous');
-      setLoading(false);
+      setUser(session?.user || null);
     });
+
+    // Cleanup subscription
+    return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
+  // Auth methods
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    navigate('/login');
+  };
 
-    // Manually update auth state after successful login
-    setSession(data.session);
-    setUser(data.user);
-    setIsAnonymous(data.user?.app_metadata?.provider === 'anonymous');
+  const signIn = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
   };
 
   const signUp = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({ email, password });
     if (error) throw error;
-
-    // Manually update auth state if session is available (auto-confirm enabled)
-    if (data.session) {
-      setSession(data.session);
-      setUser(data.user);
-      setIsAnonymous(false);
-    }
   };
 
-  const signInAnonymously = async () => {
-    const { data, error } = await supabase.auth.signInAnonymously();
-    if (error) throw error;
-
-    // Manually update auth state
-    setSession(data.session);
-    setUser(data.user);
-    setIsAnonymous(true);
+  // Expose session data and auth methods
+  const value = {
+    session,
+    user,
+    signOut,
+    signIn,
+    signUp,
+    loading,
+    // Add other auth methods as needed
   };
 
-  const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-
-    // Manually clear auth state
-    setSession(null);
-    setUser(null);
-    setIsAnonymous(false);
-  };
-
-  return (
-    <AuthContext.Provider
-      value={{
-        session,
-        user,
-        isAnonymous,
-        loading,
-        signIn,
-        signUp,
-        signInAnonymously,
-        signOut,
-      }}
-    >
-      {!loading && children}
-    </AuthContext.Provider>
-  );
-};
-
-// Export the hook to use this context
-export const useAuth = () => useContext(AuthContext);
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
