@@ -61,6 +61,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   };
 
+  const signInAnonymously = async () => {
+    const { error } = await supabase.auth.signInAnonymously();
+    if (error) throw error;
+  };
+
   // Expose session data and auth methods
   const value = {
     session,
@@ -68,6 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signOut,
     signIn,
     signUp,
+    signInAnonymously,
     loading,
     // Add other auth methods as needed
   };

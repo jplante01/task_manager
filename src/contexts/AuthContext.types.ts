@@ -6,5 +6,6 @@ export type AuthContextType = {
   signOut: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<void>;
+  signInAnonymously: () => Promise<void>;
   loading: boolean;
 }; 

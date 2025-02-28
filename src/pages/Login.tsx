@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { AuthContext } from '../contexts/AuthContext';
 import { AuthError } from '@supabase/supabase-js';
 
@@ -16,7 +16,7 @@ export const Login = () => {
     throw new Error('Login must be used within an AuthProvider');
   }
 
-  const { signIn } = context;
+  const { signIn, signInAnonymously } = context;
   const from = location.state?.from?.pathname || '/';
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,11 +67,32 @@ export const Login = () => {
           {loading ? 'Logging in...' : 'Login'}
         </button>
       </form>
-      <div className='mt-4 text-center'>
-        Don't have an account?{' '}
-        <a href='/register' className='text-blue-500'>
-          Register
-        </a>
+      <div className='mt-4 flex flex-col gap-4 text-center'>
+        <div className='text-gray-500'>or</div>
+        <button
+          onClick={async () => {
+            try {
+              setLoading(true);
+              await signInAnonymously();
+              navigate(from, { replace: true });
+            } catch (error) {
+              setError('Failed to sign in anonymously');
+            } finally {
+              setLoading(false);
+            }
+          }}
+          className='w-full p-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors'
+          disabled={loading}
+        >
+          Continue as Guest
+        </button>
+        
+        <div className='text-sm text-gray-600'>
+          Don't have an account?{' '}
+          <Link to='/register' className='text-blue-500'>
+            Register
+          </Link>
+        </div>
       </div>
     </div>
   );
