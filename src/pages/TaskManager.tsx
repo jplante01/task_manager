@@ -8,7 +8,7 @@ import { AuthContext } from '../contexts/AuthContext';
 export const TaskList = () => {
   const {
     tasks,
-    isLoading,
+    isLoadingTasks,
     error,
     newTaskDescription,
     setNewTaskDescription,
@@ -18,13 +18,13 @@ export const TaskList = () => {
     toggleTaskStar,
   } = useTaskManager();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const authContext = useContext(AuthContext);
+  const context = useContext(AuthContext);
 
-  if (!authContext) {
+  if (!context) {
     throw new Error('TaskList must be used within an AuthProvider');
   }
 
-  const { signOut } = authContext;
+  const { signOut } = context;
 
   const onAddTask = (description: string) => {
     handleAddTask(description);
@@ -43,7 +43,7 @@ export const TaskList = () => {
   const activeTasks = sortedTasks.filter((task) => !task.completed);
   const completedTasks = sortedTasks.filter((task) => task.completed);
 
-  if (isLoading) {
+  if (isLoadingTasks) {
     return <div className='text-center py-8'>Loading tasks...</div>;
   }
 
@@ -88,7 +88,7 @@ export const TaskList = () => {
             <div>Total: {tasks.length} tasks</div>
             <div>Completed: {tasks.filter((t) => t.completed).length} tasks</div>
             <div>Starred: {tasks.filter((t) => t.starred).length} tasks</div>
-            
+
             {/* Sign Out Button */}
             <button
               onClick={signOut}

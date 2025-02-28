@@ -10,7 +10,7 @@ interface Task {
 
 interface UseTaskManagerReturn {
   tasks: Task[];
-  isLoading: boolean;
+  isLoadingTasks: boolean;
   error: string | null;
   newTaskDescription: string;
   setNewTaskDescription: React.Dispatch<React.SetStateAction<string>>;
@@ -40,7 +40,7 @@ export function useTaskManager(): UseTaskManagerReturn {
     },
   ]);
   const [newTaskDescription, setNewTaskDescription] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingTasks, setIsLoadingTasks] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleAddTask = (description: string) => {
@@ -105,7 +105,7 @@ export function useTaskManager(): UseTaskManagerReturn {
 
   return {
     tasks,
-    isLoading,
+    isLoadingTasks,
     error,
     newTaskDescription,
     setNewTaskDescription,
