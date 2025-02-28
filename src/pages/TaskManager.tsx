@@ -1,8 +1,9 @@
 // pages/TaskList.tsx
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { useTaskManager } from '../hooks/useTaskManager';
 import { AddTaskForm } from '../components/AddTaskForm';
 import { TaskItem } from '../components/TaskItem';
+import { AuthContext } from '../contexts/AuthContext';
 
 export const TaskList = () => {
   const {
@@ -17,6 +18,13 @@ export const TaskList = () => {
     toggleTaskStar,
   } = useTaskManager();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const authContext = useContext(AuthContext);
+
+  if (!authContext) {
+    throw new Error('TaskList must be used within an AuthProvider');
+  }
+
+  const { signOut } = authContext;
 
   const onAddTask = (description: string) => {
     handleAddTask(description);
@@ -80,6 +88,14 @@ export const TaskList = () => {
             <div>Total: {tasks.length} tasks</div>
             <div>Completed: {tasks.filter((t) => t.completed).length} tasks</div>
             <div>Starred: {tasks.filter((t) => t.starred).length} tasks</div>
+            
+            {/* Sign Out Button */}
+            <button
+              onClick={signOut}
+              className='w-full mt-4 p-2 text-red-600 hover:bg-red-50 rounded transition-colors'
+            >
+              Sign Out
+            </button>
           </div>
         </div>
       </div>
