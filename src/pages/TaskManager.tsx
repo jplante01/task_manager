@@ -26,10 +26,6 @@ export const TaskList = () => {
 
   const { signOut } = context;
 
-  const onAddTask = (description: string) => {
-    handleAddTask(description);
-    setIsDrawerOpen(false);
-  };
 
   const sortedTasks = [...tasks].sort((a, b) => {
     // Sort by starred first, then by completion status
@@ -79,7 +75,8 @@ export const TaskList = () => {
             <AddTaskForm
               description={newTaskDescription}
               onDescriptionChange={setNewTaskDescription}
-              onSubmit={onAddTask}
+              onSubmit={handleAddTask}
+              isLoading={isLoadingTasks}
             />
           </div>
 
