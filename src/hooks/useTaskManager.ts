@@ -71,16 +71,29 @@ export function useTaskManager(): UseTaskManagerReturn {
 
   // Toggle task completion status
   const toggleComplete = async (id: string) => {
-    try {
-      const taskToUpdate = tasks.find((t) => t.id === id);
-      if (!taskToUpdate) return;
+    const taskToUpdate = tasks.find((t) => t.id === id);
+    if (!taskToUpdate) return;
 
+    try {
+      // Optimistically update UI
+      setTasks(
+        tasks.map((task) => (task.id === id ? { ...task, completed: !task.completed } : task)),
+      );
+
+      // Update server
       const updatedTask = await taskService.updateTask(id, {
         completed: !taskToUpdate.completed,
       });
 
+      // Update with server response (optional, in case server adds additional data)
       setTasks(tasks.map((task) => (task.id === id ? updatedTask : task)));
     } catch (err) {
+      // Now taskToUpdate is in scope
+      setTasks(
+        tasks.map((task) =>
+          task.id === id ? { ...task, completed: taskToUpdate.completed } : task,
+        ),
+      );
       setError('Failed to update task');
       console.error(err);
     }
@@ -88,16 +101,22 @@ export function useTaskManager(): UseTaskManagerReturn {
 
   // Toggle star status
   const toggleStar = async (id: string) => {
-    try {
-      const taskToUpdate = tasks.find((t) => t.id === id);
-      if (!taskToUpdate) return;
+    const taskToUpdate = tasks.find((t) => t.id === id);
+    if (!taskToUpdate) return;
 
-      const updatedTask = await taskService.updateTask(id, {
+    try {
+      // Optimistically update UI
+      setTasks(tasks.map((task) => (task.id === id ? { ...task, starred: !task.starred } : task)));
+
+      // Update server
+      await taskService.updateTask(id, {
         starred: !taskToUpdate.starred,
       });
-
-      setTasks(tasks.map((task) => (task.id === id ? updatedTask : task)));
     } catch (err) {
+      // Revert on error
+      setTasks(
+        tasks.map((task) => (task.id === id ? { ...task, starred: taskToUpdate.starred } : task)),
+      );
       setError('Failed to update task');
       console.error(err);
     }
