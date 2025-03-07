@@ -27,7 +27,7 @@ COPY env.sh /env.sh
 RUN chmod +x /env.sh
 
 # Expose the port Fly.io expects
-EXPOSE 8080
+EXPOSE 80
 
 # Use the environment script as the container entrypoint
 CMD ["/env.sh"]
