@@ -2,8 +2,8 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]  # Or your default branch
-  workflow_dispatch:    # Allows manual triggering
+    branches: [ main ] # Or your default branch
+  workflow_dispatch: # Allows manual triggering
 
 jobs:
   build-and-deploy:
@@ -29,8 +29,11 @@ jobs:
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           
       - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@v4
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          folder: ./dist  # The folder the action should deploy (Vite's default build output)
-          branch: gh-pages  # The branch the action should deploy to
-          token: ${{ secrets.GITHUB_TOKEN }}  # Add this line to provide authentication
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          enable_jekyll: false
+          allow_empty_commit: false
+          force_orphan: true
+          publish_branch: gh-pages
