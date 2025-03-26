@@ -33,3 +33,4 @@ jobs:
         with:
           folder: dist  # The folder the action should deploy (Vite's default build output)
           branch: gh-pages  # The branch the action should deploy to
+          token: ${{ secrets.GITHUB_TOKEN }}  # Add this line to provide authentication
