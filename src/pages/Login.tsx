@@ -35,7 +35,10 @@ export const Login = () => {
   };
 
   return (
-    <div className='max-w-md mx-auto mt-10 p-6 border rounded shadow'>
+    <>
+    <div className='h-10'>
+    </div>
+    <div className='max-w-md mx-auto p-6 border rounded shadow'>
       <h1 className='text-xl font-bold mb-4'>Login</h1>
       {error && <div className='mb-4 text-red-500'>{error}</div>}
       <form onSubmit={handleSubmit}>
@@ -95,5 +98,6 @@ export const Login = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
